@@ -1,98 +1,101 @@
-# Numerical Simulation of a 1D Blood Flow Test Problem
+# 1D Blood Flow Model (Aneurysm Project)
 
-This repository contains a numerical implementation of a simplified **1D blood flow model** described in the manuscript:
+## Overview 
+This repository contains a simplified 1D numerical model for wave propagation in blood flow, developed as part of an aneurysm-related research project. The goal is to study how waves evolve over time in a simplified arterial segment using a finite-difference scheme.<br>
 
-*Mathematical Modelling of 1D Blood Flow in Arteries with Aneurysm Using the Navier–Stokes Equations.*
+The model tracks two coupled variables:
 
-The goal is to solve the simplified 1D system
+- Q(z,t): primary wave variable (e.g. flow/pressure-like quantity)
+- A(z,t): auxiliary coupled variable
 
-Q_t + A_z + (1/5)Q = 0
-A_t + Q_z = 0
+From these, characteristic variables are constructed:
 
-on the spatial domain
-
-z ∈ (0,1)
-
-using finite difference schemes.
+- W1 = Q + A (right-moving waves)
+- W2 = Q - A (left-moving waves)
 
 ---
 
-# Numerical Methods
+## Numerical Method
+The system is solved using the Lax–Wendroff scheme, a second-order finite difference method for hyperbolic PDEs.<br>
 
-Three schemes were implemented:
+Key features:
 
-• Lax–Friedrichs
-First‑order, highly diffusive, used as a baseline.
-• Lax–Wendroff
-Second‑order accurate, less diffusive, produces sharper wave profiles
-• Improved Lax–Wendroff with correct boundary conditions
-Final version used for the main results.
+- Spatial domain: z ∈ [0, 1]
+- Uniform grid discretisation
+- Explicit time stepping
+- CFL-stable timestep choice (dt proportional to dz)
 
-The Lax–Wendroff scheme is the primary method recommended in the manuscript and is used for the final plots.
+A damping term is included in the Q-equation to model energy loss:
 
----
-
-# Initial Conditions
-
-Two localized pulses are used:
-
-Flow pulse near z = 0.4
-Area pulse near z = 0.7
-
-Both pulses are implemented as Gaussian functions with width ε = 0.02.
-
-These pulses generate left‑ and right‑moving waves that interact through the coupled system.
+- This leads to gradual energy decay over time.
 
 ---
 
-# Boundary Conditions
+## Initial Conditions
+The simulation starts from two Gaussian perturbations:
 
-The boundary conditions are
+- One in Q centered at z = 0.4
+- One in A centered at z = 0.7
 
-Q_z(0,t) + A_z(0,t) = 0
-Q_z(1,t) − A_z(1,t) = 0
-
-They are implemented using finite difference approximations consistent with the numerical scheme.
-
----
-
-# Output Times
-
-Solutions are evaluated at
-
-t = 0.25
-t = 0.5
-t = 1.0
-t = 1.7
-t = 2.6
-
-Both Q(z, t) and A(z, t) are stored and plotted.
+These evolve into travelling waves due to the hyperbolic nature of the system.
 
 ---
 
-# Running the Code
+## Boundary Conditions
+Coupled derivative-based boundary conditions are used:
 
-Install dependencies:
+- Left boundary: Q_z + A_z = 0
+- Right boundary: Q_z - A_z = 0
 
-pip install -r requirements.txt
-
-Run the improved solver:
-
-python code/lax_wendroff_improved_bc.py
+These allow outgoing waves while minimizing artificial reflections.
 
 ---
 
-# Output
+## Outputs
+The simulation generates snapshots at selected times:
 
-The simulation generates plots of
-
+### Primary variables
 Q(z,t)
 A(z,t)
 
-which are saved in the `figures/` directory.
+### Characteristic variables
+W1 = Q + A (right-moving component)
+W2 = Q - A (left-moving component)
+
+### Energy
+The total energy is computed as: E(t) = ∫ (Q² + A²) dz
+
+This is used to observe numerical damping and stability behaviour.
 
 ---
 
-# Report
+## Key Observations
+- Waves propagate and split into left- and right-moving components
+- W1 and W2 clearly separate directional wave behaviour
+- Energy shows a gradual decrease due to damping
+- Boundary conditions reduce strong reflections
+- Small numerical dispersion is visible in wave shape over time
 
-A short explanation of the model, numerical method, and results is included in the `report/` directory.
+---
+
+## Files
+- code/bloodflow_lax_wendroff_final.py → main improved model
+- code/bloodflow_lax_wendroff_boundary_conditions.py → boundary condition test
+- figures/ → generated plots (Q, A, W1, W2, energy)
+
+---
+
+## Purpose of This Version
+This version represents a cleaned and improved numerical experiment focusing on:
+
+- stable wave propagation
+- characteristic decomposition
+- energy behaviour
+- physically consistent boundary treatment
+
+It serves as a foundation for further 1D vascular modelling extensions.<br>
+
+---
+
+## Notes
+This is a simplified educational / research prototype, not a full physiological model of aneurysm blood flow. It is intended for numerical experimentation and qualitative insight into wave behaviour in 1D systems.
